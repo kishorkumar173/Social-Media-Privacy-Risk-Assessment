@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Hardening Simulator | PrivacyGuard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="bi bi-shield-lock-fill" style="color: var(--accent-cyan);"></i>
+            <span>PrivacyGuard <span class="brand-badge">SecOps</span></span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/" class="nav-link"><i class="bi bi-house"></i> Overview</a></li>
+            <li><a href="/assessment" class="nav-link"><i class="bi bi-clipboard-check"></i> Assessment</a></li>
+            <li><a href="/dashboard" class="nav-link"><i class="bi bi-graph-up-arrow"></i> Dashboard</a></li>
+            <li><a href="/simulator" class="nav-link active"><i class="bi bi-sliders"></i> Simulator</a></li>
+            <li><a href="/metadata" class="nav-link"><i class="bi bi-image"></i> EXIF Inspector</a></li>
+            <li><a href="/checklist" class="nav-link"><i class="bi bi-check2-square"></i> Checklist</a></li>
+            <li><a href="/assessment" class="nav-link nav-cta"><i class="bi bi-play-fill"></i> New Audit</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title"><i class="bi bi-sliders2-vertical" style="color: var(--accent-cyan);"></i> Speculative Privacy Hardening Simulator</h1>
+            <p class="page-subtitle">
+                "What happens if I improve my settings?" Toggle speculative privacy and security hardening controls to simulate instantaneous exposure reduction and risk tier migration.
+            </p>
+        </div>
+
+        <!-- Comparative Score Hero Cards -->
+        <div class="grid-3" style="margin-bottom: 2rem;">
+            <!-- Current Baseline Card -->
+            <div class="card" style="border-left: 4px solid #ef4444;">
+                <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">
+                    Current Baseline Posture
+                </div>
+                <div style="display: flex; align-items: baseline; gap: 0.5rem; margin: 0.5rem 0;">
+                    <div id="simBaselineScore" style="font-size: 2.8rem; font-weight: 900; font-family: var(--font-mono); color: #ef4444;">--</div>
+                    <div style="color: var(--text-muted); font-size: 1rem;">/ 100</div>
+                </div>
+                <div id="simBaselineTier" class="badge badge-crit">EVALUATING</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.75rem;">
+                    Before hardening adjustments
+                </div>
+            </div>
+
+            <!-- Projected Hardened Card -->
+            <div class="card" style="border-left: 4px solid #10b981;">
+                <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">
+                    Projected Hardened Score
+                </div>
+                <div style="display: flex; align-items: baseline; gap: 0.5rem; margin: 0.5rem 0;">
+                    <div id="simProjectedScore" style="font-size: 2.8rem; font-weight: 900; font-family: var(--font-mono); color: #10b981;">--</div>
+                    <div style="color: var(--text-muted); font-size: 1rem;">/ 100</div>
+                </div>
+                <div id="simProjectedTier" class="badge badge-low">SIMULATED</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.75rem;">
+                    After applying selected toggles
+                </div>
+            </div>
+
+            <!-- Risk Reduction Delta Card -->
+            <div class="card" style="border-left: 4px solid var(--accent-cyan); background: linear-gradient(145deg, #101c34, #12294a);">
+                <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">
+                    Net Risk Reduction
+                </div>
+                <div style="display: flex; align-items: baseline; gap: 0.5rem; margin: 0.5rem 0;">
+                    <div id="simDeltaPoints" style="font-size: 2.8rem; font-weight: 900; font-family: var(--font-mono); color: var(--accent-cyan);">0</div>
+                    <div style="color: var(--text-muted); font-size: 1rem;">points</div>
+                </div>
+                <div id="simDeltaPct" class="badge badge-mod">0% IMPROVEMENT</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.75rem;">
+                    Decrease in attack surface exposure
+                </div>
+            </div>
+        </div>
+
+        <!-- Simulator Layout: Toggles on Left, Dynamic Comparison on Right -->
+        <div class="grid-2">
+            <!-- Toggles Container -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="font-size: 1.15rem; color: #fff; font-weight: 700;">
+                        <i class="bi bi-toggle2-on" style="color: var(--accent-cyan);"></i> Select Hardening Actions
+                    </h3>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button id="btnSelectAllToggles" class="btn btn-secondary btn-sm">Select All</button>
+                        <button id="btnClearToggles" class="btn btn-secondary btn-sm">Clear</button>
+                    </div>
+                </div>
+                <p style="font-size: 0.825rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+                    Toggle high-impact privacy and authentication controls to see immediate projected score improvements:
+                </p>
+
+                <div id="simulatorTogglesList">
+                    <!-- Toggles dynamically generated here -->
+                </div>
+            </div>
+
+            <!-- Comparative Visualizer -->
+            <div class="card">
+                <h3 style="font-size: 1.15rem; color: #fff; font-weight: 700; margin-bottom: 0.5rem;">
+                    <i class="bi bi-bar-chart-line-fill" style="color: var(--accent-blue);"></i> Before vs. After Category Comparison
+                </h3>
+                <p style="font-size: 0.825rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+                    Category risk reduction across 10 assessment domains:
+                </p>
+
+                <div style="position: relative; height: 380px;">
+                    <canvas id="chartSimulatorComparison"></canvas>
+                </div>
+
+                <div style="margin-top: 1.5rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted);">
+                    <strong><i class="bi bi-info-circle"></i> Simulation Notice:</strong> This simulation is an educational projection based on our defensive risk framework. It illustrates the mathematical attack surface reduction achieved through configuration hardening, but does not guarantee immunity from targeted threat campaigns.
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div><strong>Social Media Privacy Risk Assessment Framework</strong> | Defensive Cybersecurity Project</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted);">Privacy Improvement Simulator • Mathematical Projection</div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/simulator.js"></script>
+</body>
+</html>

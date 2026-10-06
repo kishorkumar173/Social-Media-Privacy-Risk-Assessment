@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Privacy Checklist | PrivacyGuard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        .checklist-item-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .checklist-item-card:hover {
+            border-color: var(--accent-cyan);
+        }
+        .checklist-item-card.completed {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+        .checklist-item-card.completed .task-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+        @media print {
+            .navbar, .footer, .print-hide { display: none !important; }
+            body { background: #fff; color: #000; }
+            .card, .checklist-item-card { border: 1px solid #ccc; background: #fff !important; color: #000 !important; }
+            .page-title { color: #000 !important; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="bi bi-shield-lock-fill" style="color: var(--accent-cyan);"></i>
+            <span>PrivacyGuard <span class="brand-badge">SecOps</span></span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/" class="nav-link"><i class="bi bi-house"></i> Overview</a></li>
+            <li><a href="/assessment" class="nav-link"><i class="bi bi-clipboard-check"></i> Assessment</a></li>
+            <li><a href="/dashboard" class="nav-link"><i class="bi bi-graph-up-arrow"></i> Dashboard</a></li>
+            <li><a href="/simulator" class="nav-link"><i class="bi bi-sliders"></i> Simulator</a></li>
+            <li><a href="/metadata" class="nav-link"><i class="bi bi-image"></i> EXIF Inspector</a></li>
+            <li><a href="/checklist" class="nav-link active"><i class="bi bi-check2-square"></i> Checklist</a></li>
+            <li><a href="/assessment" class="nav-link nav-cta"><i class="bi bi-play-fill"></i> New Audit</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <!-- Header -->
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 class="page-title"><i class="bi bi-check2-square" style="color: var(--accent-cyan);"></i> Social Media Privacy Checklist</h1>
+                <p class="page-subtitle">
+                    A comprehensive, printable hardening checklist to systematically verify and secure your social media footprint across all accounts.
+                </p>
+            </div>
+            <div class="print-hide" style="display: flex; gap: 0.5rem;">
+                <button onclick="window.print()" class="btn btn-secondary btn-sm">
+                    <i class="bi bi-printer"></i> Print / Save PDF
+                </button>
+                <button id="btnCheckAll" class="btn btn-secondary btn-sm">
+                    <i class="bi bi-check-all"></i> Check All
+                </button>
+                <button id="btnResetChecklist" class="btn btn-secondary btn-sm">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress Overview -->
+        <div class="card" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <div style="flex: 1;">
+                <div style="font-weight: 700; color: #fff; font-size: 1rem; margin-bottom: 0.25rem;">
+                    Hardening Progress: <span id="chkCount" style="color: var(--accent-cyan);">0 / 18</span> Completed
+                </div>
+                <div style="background: var(--bg-secondary); border-radius: 9999px; height: 10px; width: 90%; overflow: hidden;">
+                    <div id="chkProgressBar" style="background: var(--risk-low); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                </div>
+            </div>
+            <div id="chkStatusBadge" class="badge badge-high" style="font-size: 0.85rem;">ACTION REQUIRED</div>
+        </div>
+
+        <!-- Checklist Grid -->
+        <div id="checklistItemsContainer">
+            <!-- Injected by JS -->
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div><strong>Social Media Privacy Risk Assessment Framework</strong> | Defensive Cybersecurity Project</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted);">Printable Checklist • Privacy by Design</div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const res = await PrivacyAPI.getPrivacyChecklist();
+            if (res.success) {
+                renderChecklist(res.checklist);
+            }
+
+            document.getElementById('btnCheckAll').addEventListener('click', () => {
+                document.querySelectorAll('.chk-box').forEach(cb => cb.checked = true);
+                updateChecklistState();
+            });
+
+            document.getElementById('btnResetChecklist').addEventListener('click', () => {
+                document.querySelectorAll('.chk-box').forEach(cb => cb.checked = false);
+                updateChecklistState();
+            });
+        });
+
+        function renderChecklist(items) {
+            const container = document.getElementById('checklistItemsContainer');
+            container.innerHTML = '';
+
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'checklist-item-card';
+                card.id = `chk-card-${item.id}`;
+
+                card.innerHTML = `
+                    <input type="checkbox" class="chk-box" id="cb-${item.id}" style="width: 20px; height: 20px; accent-color: var(--accent-cyan); margin-top: 3px; cursor: pointer;">
+                    <div style="flex: 1;">
+                        <div class="task-text" style="font-weight: 600; color: #fff; font-size: 0.95rem;">${item.task}</div>
+                        <span class="question-tag" style="display: inline-block; margin-top: 0.25rem;">Domain: ${item.category}</span>
+                    </div>
+                `;
+
+                card.addEventListener('click', (e) => {
+                    if (e.target.tagName !== 'INPUT') {
+                        const cb = card.querySelector('.chk-box');
+                        cb.checked = !cb.checked;
+                        updateChecklistState();
+                    }
+                });
+
+                card.querySelector('.chk-box').addEventListener('change', () => {
+                    updateChecklistState();
+                });
+
+                container.appendChild(card);
+            });
+            updateChecklistState();
+        }
+
+        function updateChecklistState() {
+            const total = document.querySelectorAll('.chk-box').length;
+            const checked = document.querySelectorAll('.chk-box:checked').length;
+            const pct = Math.round((checked / (total || 1)) * 100);
+
+            document.getElementById('chkCount').textContent = `${checked} / ${total}`;
+            document.getElementById('chkProgressBar').style.width = `${pct}%`;
+
+            document.querySelectorAll('.chk-box').forEach(cb => {
+                const card = cb.closest('.checklist-item-card');
+                if (cb.checked) {
+                    card.classList.add('completed');
+                } else {
+                    card.classList.remove('completed');
+                }
+            });
+
+            const badge = document.getElementById('chkStatusBadge');
+            if (checked === total) {
+                badge.textContent = "FULLY HARDENED";
+                badge.className = "badge badge-low";
+            } else if (checked > total / 2) {
+                badge.textContent = "IN PROGRESS";
+                badge.className = "badge badge-mod";
+            } else {
+                badge.textContent = "ACTION REQUIRED";
+                badge.className = "badge badge-high";
+            }
+        }
+    </script>
+</body>
+</html>

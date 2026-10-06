@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image EXIF Metadata Inspector | PrivacyGuard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="bi bi-shield-lock-fill" style="color: var(--accent-cyan);"></i>
+            <span>PrivacyGuard <span class="brand-badge">SecOps</span></span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/" class="nav-link"><i class="bi bi-house"></i> Overview</a></li>
+            <li><a href="/assessment" class="nav-link"><i class="bi bi-clipboard-check"></i> Assessment</a></li>
+            <li><a href="/dashboard" class="nav-link"><i class="bi bi-graph-up-arrow"></i> Dashboard</a></li>
+            <li><a href="/simulator" class="nav-link"><i class="bi bi-sliders"></i> Simulator</a></li>
+            <li><a href="/metadata" class="nav-link active"><i class="bi bi-image"></i> EXIF Inspector</a></li>
+            <li><a href="/checklist" class="nav-link"><i class="bi bi-check2-square"></i> Checklist</a></li>
+            <li><a href="/assessment" class="nav-link nav-cta"><i class="bi bi-play-fill"></i> New Audit</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title"><i class="bi bi-camera-fill" style="color: var(--accent-cyan);"></i> Safe Local EXIF & Media Metadata Inspector</h1>
+            <p class="page-subtitle">
+                Inspect image headers locally for embedded GPS coordinates, camera hardware serials, and timestamps. Strip all tracking metadata before uploading photos to social networks.
+            </p>
+        </div>
+
+        <div class="grid-2">
+            <!-- Upload Box & Privacy Note -->
+            <div>
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 0.75rem;">
+                        <i class="bi bi-upload" style="color: var(--accent-blue);"></i> Select Image for Local Inspection
+                    </h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+                        Images are analyzed purely in-memory on your local machine. No external cloud uploads or third-party servers are involved.
+                    </p>
+
+                    <div id="dropZone" style="border: 2px dashed var(--border-color); border-radius: 8px; padding: 2.5rem 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s ease; background: var(--bg-secondary);">
+                        <i class="bi bi-cloud-arrow-up" style="font-size: 2.5rem; color: var(--accent-cyan);"></i>
+                        <div style="font-weight: 600; color: #fff; margin-top: 0.75rem;">Click to select an image or drag & drop</div>
+                        <div style="font-size: 0.775rem; color: var(--text-muted); margin-top: 0.25rem;">JPEG, PNG, WEBP supported (Max 25MB)</div>
+                        <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                    </div>
+
+                    <div id="fileInfoBox" style="display: none; margin-top: 1rem; padding: 0.75rem; background: var(--bg-card); border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+                        <span style="color: var(--text-muted);">Selected: </span><strong id="selectedFileName" style="color: #fff;">--</strong>
+                    </div>
+
+                    <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+                        <button id="btnInspect" class="btn btn-primary" style="flex: 1;" disabled>
+                            <i class="bi bi-search"></i> Inspect Metadata
+                        </button>
+                        <button id="btnStrip" class="btn btn-secondary" style="flex: 1;" disabled>
+                            <i class="bi bi-shield-x"></i> Strip & Download
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Educational Primer Card -->
+                <div class="card">
+                    <h4 style="font-size: 1rem; color: #60a5fa; margin-bottom: 0.75rem;">
+                        <i class="bi bi-info-circle-fill"></i> Why EXIF Metadata Matters in Cybersecurity
+                    </h4>
+                    <p style="font-size: 0.825rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 0.75rem;">
+                        Exchangeable Image File Format (EXIF) is automatically embedded by modern smartphones and digital cameras into every photo taken.
+                    </p>
+                    <ul style="padding-left: 20px; font-size: 0.8rem; color: var(--text-secondary);">
+                        <li style="margin-bottom: 6px;"><strong>GPS Coordinates:</strong> Exact latitude and longitude pinpoints residences, workplaces, or schools.</li>
+                        <li style="margin-bottom: 6px;"><strong>Device Identifiers:</strong> Make, model, firmware version, and lens specifications can assist hardware fingerprinting.</li>
+                        <li style="margin-bottom: 6px;"><strong>Timestamps:</strong> Date and second-level time tags disclose daily schedules and travel itineraries.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Inspection Results Display -->
+            <div class="card" id="resultsCard">
+                <h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span><i class="bi bi-card-checklist" style="color: var(--accent-cyan);"></i> Metadata Findings</span>
+                    <span id="exifStatusBadge" class="badge badge-mod">NO IMAGE LOADED</span>
+                </h3>
+
+                <!-- Warnings alert box -->
+                <div id="leakAlertsContainer" style="display: none; margin-bottom: 1.25rem;">
+                    <!-- Alert banners injected here -->
+                </div>
+
+                <!-- GPS Coordinates Display -->
+                <div id="gpsDataBox" style="display: none; margin-bottom: 1.25rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px;">
+                    <div style="font-weight: 700; color: #ef4444; font-size: 0.9rem; margin-bottom: 0.35rem;">
+                        <i class="bi bi-geo-alt-fill"></i> Precise Geolocation Detected:
+                    </div>
+                    <div id="gpsCoordsText" style="font-family: var(--font-mono); font-size: 1.1rem; color: #fff; margin-bottom: 0.25rem;">--</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Anyone with access to this unstripped photo can extract these exact coordinates.</div>
+                </div>
+
+                <!-- Metadata Key-Value Table -->
+                <div class="data-table-wrapper" style="max-height: 380px; overflow-y: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>EXIF Tag</th>
+                                <th>Embedded Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="metadataTableBody">
+                            <tr>
+                                <td colspan="2" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                    Select an image and click "Inspect Metadata" to view tags.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div><strong>Social Media Privacy Risk Assessment Framework</strong> | Defensive Cybersecurity Project</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted);">100% In-Memory Processing • Zero External Data Leaks</div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/metadata.js"></script>
+</body>
+</html>
